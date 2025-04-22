@@ -72,24 +72,8 @@ public class UsuarioController {
         Usuario usuarioExistente = usuarioRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("ID inválido: " + id));
 
-        switch (usuarioForm) {
-            case Aluno alunoForm -> {
-            copiarDados(alunoForm, (Aluno) usuarioExistente);
-            alunoRepo.save((Aluno) usuarioExistente);
-            }
-            case Professor professorForm -> {
-            copiarDados(professorForm, (Professor) usuarioExistente);
-            professorRepo.save((Professor) usuarioExistente);
-            }
-            case EmpresaParceira empresaForm -> {
-            copiarDados(empresaForm, (EmpresaParceira) usuarioExistente);
-            EmpresaParceiraRepo.save((EmpresaParceira) usuarioExistente);
-            }
-            default -> throw new IllegalArgumentException("Tipo de usuário desconhecido");
-        }
-            EmpresaParceira empresaForm = (EmpresaParceira) usuarioForm;
-            copiarDados(empresaForm, (EmpresaParceira) usuarioExistente);
-            EmpresaParceiraRepo.save((EmpresaParceira) usuarioExistente);
+        copiarDados(usuarioForm, (Usuario) usuarioExistente);
+        usuarioRepository.save((Usuario) usuarioExistente);
 
         return "redirect:/usuarios"; 
     }
