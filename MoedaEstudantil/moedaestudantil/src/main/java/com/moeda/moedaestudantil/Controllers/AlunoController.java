@@ -1,34 +1,31 @@
 package com.moeda.moedaestudantil.Controllers;
 
-import com.moeda.moedaestudantil.Models.Aluno;
-import com.moeda.moedaestudantil.Models.Instituicao;
-import com.moeda.moedaestudantil.Repositories.AlunoRepository;
-import com.moeda.moedaestudantil.Repositories.InstituicaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import com.moeda.moedaestudantil.Models.Aluno;
+import com.moeda.moedaestudantil.Models.Usuario;
+import com.moeda.moedaestudantil.Repositories.UsuarioRepository;
 
 @Controller
-@RequestMapping("/cadastro/aluno")
 public class AlunoController {
 
     @Autowired
-    private AlunoRepository alunoRepository;
+    private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private InstituicaoRepository instituicaoRepository;
-
-    @GetMapping
-    public String formCadastro(Model model) {
-        model.addAttribute("aluno", new Aluno());
-        model.addAttribute("instituicoes", instituicaoRepository.findAll());
+    @GetMapping("/cadastro/aluno")
+    public String showCadastroForm(Model model) {
+        model.addAttribute("usuario", new Aluno());
         return "cadastro_aluno";
     }
 
-    @PostMapping
-    public String cadastrar(@ModelAttribute Aluno aluno) {
-        alunoRepository.save(aluno);
-        return "redirect:/login";
+    @PostMapping("/cadastro/aluno")
+    public String submitCadastroForm(@ModelAttribute Usuario usuario) {
+        usuarioRepository.save(usuario);  // Salva o usuário no banco de dados
+        return "redirect:/cadastro/sucesso";
     }
 }

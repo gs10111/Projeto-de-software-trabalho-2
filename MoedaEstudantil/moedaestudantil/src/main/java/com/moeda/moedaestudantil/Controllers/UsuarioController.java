@@ -1,66 +1,80 @@
 package com.moeda.moedaestudantil.Controllers;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.moeda.moedaestudantil.DTO.UsuarioForm;
 
-import com.moeda.moedaestudantil.Enumerators.Role;
+import com.moeda.moedaestudantil.Models.Aluno;
+import com.moeda.moedaestudantil.Models.EmpresaParceira;
+import com.moeda.moedaestudantil.Models.Professor;
 import com.moeda.moedaestudantil.Models.Usuario;
-import com.moeda.moedaestudantil.Repositories.UsuarioRepository;
+import com.moeda.moedaestudantil.Repositories.AlunoRepository;
+import com.moeda.moedaestudantil.Repositories.EmpresaParceiraRepository;
+import com.moeda.moedaestudantil.Repositories.ProfessorRepository;
 
 @Controller
 public class UsuarioController {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    public UsuarioController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private AlunoRepository alunoRepo;
+    @Autowired
+    private ProfessorRepository professorRepo;
+    @Autowired
+    private EmpresaParceiraRepository EmpresaParceiraRepo;
 
     @GetMapping("/cadastro")
-    public String escolhaCadastro() {
-        return "cadastro"; // Página com opções de tipo (aluno, professor, empresa)
+    public String exibirFormulario(Model model) {
+        model.addAttribute("usuario", new UsuarioForm());
+        return "cadastro";
     }
 
-    @GetMapping("/cadastro/{tipo}")
-    public String cadastroPorTipo(@PathVariable String tipo, Model model) {
-        System.out.println("Tipo de cadastro: " + tipo); 
-        Usuario usuario = new Usuario();
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("tipo", tipo); 
-
-        switch (tipo) {
-            case "aluno": return "cadastro_aluno";
-            case "professor": return "cadastro_professor";
-            case "empresa": return "cadastro_empresa";
-            default: return "redirect:/cadastro";
+    @PostMapping("/cadastro")
+    public String processarCadastro(@ModelAttribute("usuario") UsuarioForm form) {
+        switch (form.getTipo()) {
+            case "ALUNO":
+                Aluno aluno = new Aluno();
+                preencherUsuario(form, aluno);
+                alunoRepo.save(aluno);
+                break;
+            case "PROFESSOR":
+                Professor professor = new Professor();
+                preencherUsuario(form, professor);
+                professorRepo.save(professor);
+                break;
+            case "EMPRESA":
+                EmpresaParceira empresa = new EmpresaParceira();
+                preencherUsuario(form, empresa);
+                EmpresaParceiraRepo.save(empresa);
+                break;
         }
-    }
-
-    @PostMapping("/cadastro/{tipo}")
-    public String processarCadastro(@PathVariable String tipo, @ModelAttribute Usuario usuario) {
-        switch (tipo) {
-            case "aluno":
-                usuario.setRole(Role.ALUNO);
-                break;
-            case "professor":
-                usuario.setRole(Role.PROFESSOR);
-                break;
-            case "empresa":
-                usuario.setRole(Role.EMPRESA);
-                break;
-            default:
-                return "redirect:/cadastro";
-        }
-
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        usuarioRepository.save(usuario);
         return "redirect:/login";
     }
+
+    private void preencherUsuario(UsuarioForm form, Usuario destino) {
+        destino.setNome(form.getNome());
+        destino.setEmail(form.getEmail());
+        destino.setCpf(form.getCpf());
+        destino.setRg(form.getRg());
+        destino.setEndereco(form.getEndereco());
+        destino.setCurso(form.getCurso());
+        destino.setInstituicao(form.getInstituicao());
+        destino.setSenha(form.getSenha());
+    }
+
+    private void copiarDados(Usuario origem, Usuario destino) {
+        destino.setNome(origem.getNome());
+        destino.setEmail(origem.getEmail());
+        destino.setCpf(origem.getCpf());
+        destino.setRg(origem.getRg());
+        destino.setEndereco(origem.getEndereco());
+        destino.setCurso(origem.getCurso());
+        destino.setInstituicao(origem.getInstituicao());
+        destino.setSenha(origem.getSenha());
+    }
 }
+
