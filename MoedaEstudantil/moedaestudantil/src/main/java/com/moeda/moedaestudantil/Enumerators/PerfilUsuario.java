@@ -1,7 +1,7 @@
 package com.moeda.moedaestudantil.Enumerators;
 
-public enum Role {
+public enum PerfilUsuario {
     ALUNO,
     PROFESSOR,
-    EMPRESA
-}
+    PARCEIRO
+} 

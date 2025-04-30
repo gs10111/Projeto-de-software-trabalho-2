@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Cupons - Moeda Estudantil</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    
+    <style>
+        .cupom-card {
+            transition: transform 0.3s ease;
+        }
+        .cupom-card:hover {
+            transform: translateY(-5px);
+        }
+        .cupom-codigo {
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border: 1px dashed #ced4da;
+        }
+        .cupom-badge-utilizado { background-color: #6c757d; }
+        .cupom-badge-ativo    { background-color: #198754; }
+        .cupom-badge-expirado { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/estudante/dashboard}">
+                <i class="fas fa-coins me-2"></i>Moeda Estudantil
+            </a>
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/extrato}">Extrato</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/vantagens}">Vantagens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/estudante/meus-cupons}">Meus Cupons</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button"
+                            id="userDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span th:text="${#authentication.name}">Usuário</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" th:href="@{/estudante/perfil}">
+                                <i class="fas fa-id-card me-2"></i>Meu Perfil
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Sair
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container py-4">
+
+        <!-- Título -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="mb-0">Meus Cupons</h1>
+                <p class="text-muted">Visualize todos os seus cupons resgatados e seus respectivos status.</p>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form th:action="@{/estudante/meus-cupons}"
+                              method="get"
+                              class="row gy-2 gx-3 align-items-center">
+                            <div class="col-md-4">
+                                <label for="empresaFilter" class="form-label">Empresa</label>
+                                <select id="empresaFilter"
+                                        name="empresa"
+                                        class="form-select">
+                                    <option value="">Todas as empresas</option>
+                                    <option th:each="empresa : ${empresas}"
+                                            th:value="${empresa.id}"
+                                            th:text="${empresa.nome}"
+                                            th:selected="${empresa.id == empresaSelecionada}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="statusFilter" class="form-label">Status</label>
+                                <select id="statusFilter"
+                                        name="status"
+                                        class="form-select">
+                                    <option value="">Todos os status</option>
+                                    <option value="ATIVO" th:selected="${status == 'ATIVO'}">Ativo</option>
+                                    <option value="UTILIZADO" th:selected="${status == 'UTILIZADO'}">Utilizado</option>
+                                    <option value="EXPIRADO" th:selected="${status == 'EXPIRADO'}">Expirado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conteúdo de cupons -->
+        <div class="row">
+            <div class="col-12">
+                <!-- Sem cupons -->
+                <div th:if="${#lists.isEmpty(cupons.content)}"
+                     class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Você ainda não resgatou nenhum cupom.
+                </div>
+
+                <!-- Lista de cupons -->
+                <div th:if="${!#lists.isEmpty(cupons.content)}"
+                     class="row g-4">
+                    <div th:each="cupom : ${cupons.content}"
+                         class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm cupom-card">
+                            <div class="card-header bg-white border-0 pt-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0"
+                                        th:text="${cupom.vantagem.nome}">
+                                        Nome da Vantagem
+                                    </h5>
+                                    <span th:classappend="
+                                        ${cupom.status.name() == 'ATIVO'    ? ' cupom-badge-ativo' :
+                                          cupom.status.name() == 'UTILIZADO'? ' cupom-badge-utilizado' :
+                                                                            ' cupom-badge-expirado'}"
+                                          th:text="
+                                        ${cupom.status.name() == 'ATIVO'    ? 'Ativo' :
+                                          cupom.status.name() == 'UTILIZADO'? 'Utilizado' :
+                                                                            'Expirado'}">
+                                        Status
+                                    </span>
+                                </div>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-store me-1"></i>
+                                    <span th:text="${cupom.vantagem.empresa.nome}">
+                                        Nome da Empresa
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <h6>Código do Cupom</h6>
+                                    <div class="cupom-codigo d-flex justify-content-between align-items-center">
+                                        <span th:text="${cupom.codigo}">ABC123XYZ</span>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary copy-btn"
+                                                th:data-cupom-codigo="${cupom.codigo}">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Valor</small>
+                                    <small class="fw-bold"
+                                           th:text="${cupom.vantagem.valor + ' ME'}">
+                                        10 ME
+                                    </small>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Resgate</small>
+                                    <small th:text="${#temporals.format(cupom.dataResgate, 'dd/MM/yyyy')}">
+                                        01/01/2023
+                                    </small>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Validade</small>
+                                    <small th:text="${#temporals.format(cupom.dataValidade, 'dd/MM/yyyy')}">
+                                        01/01/2024
+                                    </small>
+                                </div>
+                                <div th:if="${cupom.dataUtilizacao != null}"
+                                     class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Utilizado em</small>
+                                    <small th:text="${#temporals.format(cupom.dataUtilizacao, 'dd/MM/yyyy')}">
+                                        01/01/2023
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <div class="d-grid gap-2">
+                                    <a th:if="${cupom.status.name() == 'ATIVO'}"
+                                       th:href="@{/estudante/vantagens/{id}(id=${cupom.vantagem.id})}"
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-info-circle me-2"></i>Ver Detalhes
+                                    </a>
+                                    <button th:if="${cupom.status.name() == 'ATIVO'}"
+                                            class="btn btn-primary"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#qrCodeModal"
+                                            th:attr="data-cupom-codigo=${cupom.codigo}">
+                                        <i class="fas fa-qrcode me-2"></i>Gerar QR Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paginação -->
+                <div th:if="${!#lists.isEmpty(cupons.content)}"
+                     class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Navegação de página">
+                        <ul class="pagination">
+                            <li class="page-item"
+                                th:classappend="${!cupons.hasPrevious()}? ' disabled'">
+                                <a class="page-link"
+                                   th:href="@{/estudante/meus-cupons(page=${cupons.number - 1},
+                                                                      size=${cupons.size},
+                                                                      empresa=${empresaSelecionada},
+                                                                      status=${status})}"
+                                   aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(0, cupons.totalPages - 1)}"
+                                th:classappend="${i == cupons.number}? ' active'">
+                                <a class="page-link"
+                                   th:href="@{/estudante/meus-cupons(page=${i},
+                                                                      size=${cupons.size},
+                                                                      empresa=${empresaSelecionada},
+                                                                      status=${status})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item"
+                                th:classappend="${!cupons.hasNext()}? ' disabled'">
+                                <a class="page-link"
+                                   th:href="@{/estudante/meus-cupons(page=${cupons.number + 1},
+                                                                      size=${cupons.size},
+                                                                      empresa=${empresaSelecionada},
+                                                                      status=${status})}"
+                                   aria-label="Próximo">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de QR Code -->
+    <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrCodeModalLabel">QR Code do Cupom</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeContainer" class="mb-3"></div>
+                    <p>Escaneie este QR Code na empresa parceira para utilizar seu cupom.</p>
+                    <div class="cupom-codigo d-inline-block">
+                        <span id="modalCupomCodigo">ABC123XYZ</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Moeda Estudantil - Todos os direitos reservados</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-decoration-none text-secondary me-3">Termos de Uso</a>
+                    <a href="#" class="text-decoration-none text-secondary">Política de Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QR Code JS -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Copiar código
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const codigo = btn.getAttribute('data-cupom-codigo');
+                    navigator.clipboard.writeText(codigo).then(() => {
+                        const orig = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => btn.innerHTML = orig, 1500);
+                    });
+                });
+            });
+            // Modal QR Code
+            const modalEl = document.getElementById('qrCodeModal');
+            modalEl.addEventListener('show.bs.modal', event => {
+                const btn = event.relatedTarget;
+                const codigo = btn.getAttribute('data-cupom-codigo');
+                document.getElementById('modalCupomCodigo').textContent = codigo;
+                gerarQRCode(codigo);
+            });
+            function gerarQRCode(codigo) {
+                const container = document.getElementById('qrCodeContainer');
+                container.innerHTML = '';
+                const qr = qrcode(0, 'M');
+                qr.addData(codigo);
+                qr.make();
+                container.innerHTML = qr.createImgTag(5);
+            }
+        });
+    </script>
+</body>
+</html>

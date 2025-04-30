@@ -1,48 +1,42 @@
 package com.moeda.moedaestudantil.Models;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.moeda.moedaestudantil.Enumerators.Role;
-
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import com.moeda.moedaestudantil.Enumerators.PerfilUsuario;
+import jakarta.persistence.*;
+import java.util.Objects;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "dtype")
-public class Usuario implements UserDetails {
+@Table(name = "usuario")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
+
+    @Column(nullable = false, unique = true)
     private String email;
-    private String cpf;
-    private String rg;
-    private String endereco;
-    private String curso;
-    private String instituicao;
-    private String senha;
-    
+
+    @Column(nullable = false)
+    private String senhaHash;
+
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(nullable = false)
+    private PerfilUsuario perfil;
 
     public Usuario() {
     }
 
-    // Getters and Setters for all fields
+    public Usuario(String nome, String email, String senhaHash, PerfilUsuario perfil) {
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+        this.perfil = perfil;
+    }
+
     public Long getId() {
         return id;
     }
@@ -67,97 +61,39 @@ public class Usuario implements UserDetails {
         this.email = email;
     }
 
-    public String getCpf() {
-        return cpf;
+    public String getSenhaHash() {
+        return senhaHash;
     }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
+    public void setSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
     }
 
-    public String getRg() {
-        return rg;
+    public PerfilUsuario getPerfil() {
+        return perfil;
     }
 
-    public void setRg(String rg) {
-        this.rg = rg;
+    public void setPerfil(PerfilUsuario perfil) {
+        this.perfil = perfil;
     }
 
-    public String getEndereco() {
-        return endereco;
+    public boolean autenticar(String senha) {
+        return false;
     }
 
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-
-    public String getCurso() {
-        return curso;
-    }
-
-    public void setCurso(String curso) {
-        this.curso = curso;
-    }
-
-    public String getInstituicao() {
-        return instituicao;
-    }
-
-    public void setInstituicao(String instituicao) {
-        this.instituicao = instituicao;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    // Métodos da interface UserDetails
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Converte a role para GrantedAuthority, ou seja, permissões do usuário
-        return List.of(() -> role.name()); // Pode personalizar conforme o necessário
+    public void logout() {
     }
 
     @Override
-    public String getPassword() {
-        return senha;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id);
     }
 
     @Override
-    public String getUsername() {
-        return email; // O username será o email
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true; // Lógica de expiração de conta
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // Lógica de conta desbloqueada
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // Lógica de expiração de credenciais
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true; // Lógica de usuário habilitado
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

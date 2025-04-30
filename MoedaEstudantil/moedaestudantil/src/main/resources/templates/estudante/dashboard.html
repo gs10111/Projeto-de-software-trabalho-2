@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Estudante - Moeda Estudantil</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/estudante/dashboard}">
+                <i class="fas fa-coins me-2"></i>Moeda Estudantil
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/estudante/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/extrato}">Extrato</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/vantagens}">Vantagens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/meus-cupons}">Meus Cupons</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span th:text="${#authentication.name}">Usuário</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" th:href="@{/estudante/perfil}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container py-4">
+        <!-- Alertas -->
+        <div th:if="${mensagem}" class="alert alert-success" role="alert">
+            <span th:text="${mensagem}"></span>
+        </div>
+        <div th:if="${erro}" class="alert alert-danger" role="alert">
+            <span th:text="${erro}"></span>
+        </div>
+        
+        <!-- Boas-vindas e Resumo -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="bg-primary text-white rounded-circle p-3">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5>Bem-vindo(a), <span th:text="${estudante.nome}">Estudante</span>!</h5>
+                                <p class="text-muted mb-0" th:text="${estudante.instituicao.nome + ' - ' + estudante.curso}">Instituição - Curso</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cards de Informação -->
+        <div class="row mb-4">
+            <!-- Saldo Atual -->
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="card-title mb-0">Saldo Atual</h6>
+                            <i class="fas fa-coins text-warning"></i>
+                        </div>
+                        <h2 class="mb-0" th:text="${estudante.saldo + ' ME'}">0 ME</h2>
+                        <p class="text-muted small">Moedas disponíveis para trocar</p>
+                        <a th:href="@{/estudante/vantagens}" class="btn btn-sm btn-outline-primary mt-2">Ver Vantagens</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cupons Ativos -->
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="card-title mb-0">Cupons Ativos</h6>
+                            <i class="fas fa-ticket-alt text-success"></i>
+                        </div>
+                        <h2 class="mb-0" th:text="${cuponsAtivos}">0</h2>
+                        <p class="text-muted small">Cupons disponíveis para uso</p>
+                        <a th:href="@{/estudante/meus-cupons}" class="btn btn-sm btn-outline-primary mt-2">Ver Cupons</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Total Recebido -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="card-title mb-0">Total Recebido</h6>
+                            <i class="fas fa-exchange-alt text-info"></i>
+                        </div>
+                        <h2 class="mb-0" th:text="${totalRecebido + ' ME'}">0 ME</h2>
+                        <p class="text-muted small">Total de moedas recebidas</p>
+                        <a th:href="@{/estudante/extrato}" class="btn btn-sm btn-outline-primary mt-2">Ver Extrato</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Últimas Transações -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Últimas Transações</h5>
+                        <a th:href="@{/estudante/extrato}" class="btn btn-sm btn-link">Ver todas</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Professor</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Sem transações -->
+                                    <tr th:if="${#lists.isEmpty(transacoes)}">
+                                        <td colspan="4" class="text-center">Nenhuma transação encontrada</td>
+                                    </tr>
+                                    <!-- Renderiza somente se houver transações -->
+                                    <tr th:each="transacao : ${transacoes}">
+                                        <td th:text="${#temporals.format(transacao.dataHora, 'dd/MM/yyyy HH:mm')}">01/01/2023 10:00</td>
+                                        <td th:text="${transacao.descricao}">Reconhecimento por trabalho em equipe</td>
+                                        <td th:text="${transacao.emissor.nome}">Professor Nome</td>
+                                        <td class="text-success" th:text="${'+' + transacao.valor + ' ME'}">+10 ME</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vantagens em Destaque -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Vantagens em Destaque</h5>
+                        <a th:href="@{/estudante/vantagens}" class="btn btn-sm btn-link">Ver todas</a>
+                    </div>
+                    <div class="card-body">
+                        <!-- Se não houver vantagens -->
+                        <div class="row" th:if="${#lists.isEmpty(vantagensDestaque)}">
+                            <div class="col text-center py-4">
+                                <p class="text-muted">Nenhuma vantagem disponível no momento</p>
+                            </div>
+                        </div>
+                        <!-- Se houver vantagens -->
+                        <div class="row" th:if="${!#lists.isEmpty(vantagensDestaque)}">
+                            <div class="col-md-4 mb-3" th:each="vantagem : ${vantagensDestaque}">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-primary" th:text="${vantagem.empresa.areaAtuacao}">Área</span>
+                                            <span class="text-primary fw-bold" th:text="${vantagem.valor + ' ME'}">50 ME</span>
+                                        </div>
+                                        <h6 class="card-title" th:text="${vantagem.nome}">Nome da Vantagem</h6>
+                                        <p class="card-text small text-muted mb-3" th:text="${vantagem.descricao}">Descrição da vantagem</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted" th:text="${'Empresa: ' + vantagem.empresa.nome}">Empresa</small>
+                                            <a th:href="@{/estudante/vantagens/{id}(id=${vantagem.id})}" class="btn btn-sm btn-outline-primary">Detalhes</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Rodapé -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Moeda Estudantil - Todos os direitos reservados</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-decoration-none text-secondary me-3">Termos de Uso</a>
+                    <a href="#" class="text-decoration-none text-secondary">Política de Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

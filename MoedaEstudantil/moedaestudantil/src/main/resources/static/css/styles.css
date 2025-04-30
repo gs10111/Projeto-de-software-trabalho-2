@@ -1,0 +1,153 @@
+/* Estilos gerais */
+body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* Estilos do cabeçalho */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+/* Cards e componentes */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Botões */
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Tabelas */
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Utilitários */
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-left: 4px solid #0d6efd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.dashboard-card .card-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.dashboard-card .card-title {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Badges */
+.badge {
+    padding: 0.4em 0.6em;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+/* Status de cupom */
+.cupom-pendente {
+    color: #ffc107;
+}
+
+.cupom-usado {
+    color: #28a745;
+}
+
+.cupom-expirado {
+    color: #dc3545;
+}
+
+/* Formulários */
+.form-label {
+    font-weight: 500;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Vantagens grid */
+.vantagens-grid .card {
+    height: 100%;
+    margin-bottom: 20px;
+}
+
+.vantagem-preco {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+/* Footer */
+footer {
+    font-size: 0.9rem;
+} 

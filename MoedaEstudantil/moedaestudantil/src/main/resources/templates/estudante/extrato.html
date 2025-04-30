@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extrato - Moeda Estudantil</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/estudante/dashboard}">
+                <i class="fas fa-coins me-2"></i>Moeda Estudantil
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/estudante/extrato}">Extrato</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/vantagens}">Vantagens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/estudante/meus-cupons}">Meus Cupons</a>
+                    </li>
+                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span th:text="${#authentication.name}">Usuário</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" th:href="@{/estudante/perfil}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container py-4">
+        <!-- Título da Página -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Extrato de Transações</h2>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary text-white rounded-pill px-3 py-2 me-3">
+                            <i class="fas fa-coins me-2"></i>
+                            <span th:text="${estudante.saldo + ' ME'}">0 ME</span>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+            </div>
+        </div>
+        
+        <!-- Filtros e Pesquisa -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form th:action="@{/estudante/extrato}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="dataInicio" class="form-label">Data Início</label>
+                                <input type="date" class="form-control" id="dataInicio" name="dataInicio" th:value="${dataInicio}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="dataFim" class="form-label">Data Fim</label>
+                                <input type="date" class="form-control" id="dataFim" name="dataFim" th:value="${dataFim}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="tipoTransacao" class="form-label">Tipo</label>
+                                <select class="form-select" id="tipoTransacao" name="tipoTransacao">
+                                    <option value="">Todos</option>
+                                    <option value="RECEBIMENTO" th:selected="${tipoTransacao == 'RECEBIMENTO'}">Recebimento</option>
+                                    <option value="RESGATE" th:selected="${tipoTransacao == 'RESGATE'}">Resgate</option>
+                                </select>
+                            </div>
+                            <div class="col-12 d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lista de Transações -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <!-- Mensagem quando não há transações -->
+                        <div th:if="${#lists.isEmpty(transacoes)}" class="text-center py-4">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Nenhuma transação encontrada no período selecionado</p>
+                        </div>
+                        
+                        <!-- Tabela de transações -->
+                        <div th:if="${!#lists.isEmpty(transacoes)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Tipo</th>
+                                        <th>Origem/Destino</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="transacao : ${transacoes}">
+                                        <td th:text="${#temporals.format(transacao.dataHora, 'dd/MM/yyyy HH:mm')}">01/01/2023 10:00</td>
+                                        <td th:text="${transacao.descricao}">Descrição da transação</td>
+                                        <td>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RECEBIMENTO}" 
+                                                  class="badge bg-success">Recebimento</span>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RESGATE}" 
+                                                  class="badge bg-primary">Resgate</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RECEBIMENTO}" 
+                                                  th:text="${transacao.emissor.nome}">Professor</span>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RESGATE}" 
+                                                  th:text="${transacao.vantagem.empresa.nome}">Empresa</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RECEBIMENTO}" 
+                                                  class="text-success" th:text="${'+' + transacao.valor + ' ME'}">+10 ME</span>
+                                            <span th:if="${transacao.tipo == T(com.moedaestudantil.model.TransacaoTipo).RESGATE}" 
+                                                  class="text-danger" th:text="${'-' + transacao.valor + ' ME'}">-10 ME</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Paginação -->
+                        <div th:if="${!#lists.isEmpty(transacoes)}" class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Navegação de página">
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${pagina == 0 ? 'disabled' : ''}">
+                                        <a class="page-link" 
+                                           th:href="@{/estudante/extrato(pagina=${pagina-1}, dataInicio=${dataInicio}, dataFim=${dataFim}, tipoTransacao=${tipoTransacao})}" 
+                                           aria-label="Anterior">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item" 
+                                        th:each="i : ${#numbers.sequence(0, totalPaginas-1)}" 
+                                        th:classappend="${pagina == i ? 'active' : ''}">
+                                        <a class="page-link" 
+                                           th:href="@{/estudante/extrato(pagina=${i}, dataInicio=${dataInicio}, dataFim=${dataFim}, tipoTransacao=${tipoTransacao})}" 
+                                           th:text="${i+1}">1</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${pagina == totalPaginas-1 ? 'disabled' : ''}">
+                                        <a class="page-link" 
+                                           th:href="@{/estudante/extrato(pagina=${pagina+1}, dataInicio=${dataInicio}, dataFim=${dataFim}, tipoTransacao=${tipoTransacao})}" 
+                                           aria-label="Próximo">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resumo -->
+        <div class="row mt-4">
+            <div class="col-md-6 offset-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Resumo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Recebido:</span>
+                            <span class="text-success" th:text="${totalRecebido + ' ME'}">+50 ME</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Resgatado:</span>
+                            <span class="text-danger" th:text="${totalResgatado + ' ME'}">-30 ME</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Saldo Atual:</span>
+                            <span class="text-primary" th:text="${estudante.saldo + ' ME'}">20 ME</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rodapé -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Moeda Estudantil - Todos os direitos reservados</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-decoration-none text-secondary me-3">Termos de Uso</a>
+                    <a href="#" class="text-decoration-none text-secondary">Política de Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

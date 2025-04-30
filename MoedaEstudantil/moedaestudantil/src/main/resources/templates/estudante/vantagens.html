@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vantagens - Moeda Estudantil</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+  <style>
+    .vantagem-card {
+      transition: transform 0.3s ease;
+    }
+    .vantagem-card:hover {
+      transform: translateY(-5px);
+    }
+    .vantagem-img {
+      height: 200px;
+      object-fit: cover;
+      border-top-left-radius: 0.375rem;
+      border-top-right-radius: 0.375rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Cabeçalho -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" th:href="@{/estudante/dashboard}">
+        <i class="fas fa-coins me-2"></i>Moeda Estudantil
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" th:href="@{/estudante/dashboard}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/estudante/extrato}">Extrato</a></li>
+          <li class="nav-item"><a class="nav-link active" th:href="@{/estudante/vantagens}">Vantagens</a></li>
+          <li class="nav-item"><a class="nav-link" th:href="@{/estudante/meus-cupons}">Meus Cupons</a></li>
+        </ul>
+        <div class="dropdown">
+          <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i>
+            <span th:text="${#authentication.name}">Usuário</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" th:href="@{/estudante/perfil}"><i class="fas fa-id-card me-2"></i>Meu Perfil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form th:action="@{/logout}" method="post">
+                <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <div class="container py-4">
+    <!-- Título da Página -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2 class="mb-0">Vantagens Disponíveis</h2>
+          <div class="bg-primary text-white rounded-pill px-3 py-2">
+            <i class="fas fa-coins me-2"></i>
+            <span th:text="${estudante.saldo + ' ME'}">0 ME</span>
+          </div>
+        </div>
+        <hr>
+      </div>
+    </div>
+
+    <!-- Filtros e Pesquisa -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <form th:action="@{/estudante/vantagens}" method="get" class="row g-3">
+              <div class="col-md-4">
+                <label for="empresa" class="form-label">Empresa</label>
+                <select id="empresa" name="empresaId" class="form-select">
+                  <option value="">Todas</option>
+                  <option th:each="empresa : ${empresas}"
+                          th:value="${empresa.id}"
+                          th:text="${empresa.nome}"
+                          th:selected="${empresaId == empresa.id}">
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="valorMaximo" class="form-label">Valor Máximo</label>
+                <input type="number" id="valorMaximo" name="valorMaximo"
+                       class="form-control" min="0" step="1"
+                       th:value="${valorMaximo}">
+              </div>
+              <div class="col-md-4">
+                <label for="pesquisa" class="form-label">Pesquisar</label>
+                <input type="text" id="pesquisa" name="pesquisa"
+                       class="form-control" placeholder="Nome ou descrição..."
+                       th:value="${pesquisa}">
+              </div>
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-filter me-2"></i>Filtrar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sem resultados -->
+    <div th:if="${#lists.isEmpty(vantagens)}" class="text-center py-5">
+      <i class="fas fa-search fa-3x text-muted mb-3"></i>
+      <p class="text-muted">Nenhuma vantagem encontrada com os filtros selecionados</p>
+    </div>
+
+    <!-- Lista de Vantagens -->
+    <div th:if="${!#lists.isEmpty(vantagens)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div class="col" th:each="vantagem : ${vantagens}">
+        <div class="card h-100 border-0 shadow-sm vantagem-card">
+          <img th:if="${vantagem.imagemUrl != null}" th:src="${vantagem.imagemUrl}"
+               class="vantagem-img" alt="Imagem da vantagem">
+          <img th:if="${vantagem.imagemUrl == null}" th:src="@{/img/vantagem-default.jpg}"
+               class="vantagem-img" alt="Imagem padrão">
+
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h5 class="card-title" th:text="${vantagem.nome}">Nome da Vantagem</h5>
+              <span class="badge bg-primary rounded-pill" th:text="${vantagem.valor + ' ME'}">10 ME</span>
+            </div>
+            <p class="text-muted mb-2">
+              <i class="fas fa-store me-1"></i>
+              <span th:text="${vantagem.empresa.nome}">Empresa</span>
+            </p>
+            <p class="card-text" th:text="${#strings.abbreviate(vantagem.descricao, 100)}">
+              Descrição limitada...
+            </p>
+          </div>
+
+          <div class="card-footer bg-white border-0 pt-0">
+            <div class="d-grid gap-2">
+              <a th:href="@{/estudante/vantagens/{id}(id=${vantagem.id})}"
+                 class="btn btn-outline-primary">
+                <i class="fas fa-info-circle me-2"></i>Detalhes
+              </a>
+              <button th:if="${estudante.saldo >= vantagem.valor}"
+                      class="btn btn-primary"
+                      type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#confirmarResgateModal"
+                      th:attr="data-vantagem-id=${vantagem.id},
+                              data-vantagem-nome=${vantagem.nome},
+                              data-vantagem-valor=${vantagem.valor}">
+                <i class="fas fa-shopping-cart me-2"></i>Resgatar
+              </button>
+              <button th:unless="${estudante.saldo >= vantagem.valor}"
+                      class="btn btn-secondary" disabled>
+                <i class="fas fa-coins me-2"></i>Saldo Insuficiente
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paginação -->
+    <div th:if="${!#lists.isEmpty(vantagens)}" class="d-flex justify-content-center mt-4">
+      <nav aria-label="Paginação">
+        <ul class="pagination">
+          <li class="page-item" th:classappend="${pagina == 0 ? ' disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/estudante/vantagens(pagina=${pagina-1}, empresaId=${empresaId}, valorMaximo=${valorMaximo}, pesquisa=${pesquisa})}"
+               aria-label="Anterior">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item"
+              th:each="i : ${#numbers.sequence(0, totalPaginas-1)}"
+              th:classappend="${pagina == i ? ' active' : ''}">
+            <a class="page-link"
+               th:href="@{/estudante/vantagens(pagina=${i}, empresaId=${empresaId}, valorMaximo=${valorMaximo}, pesquisa=${pesquisa})}"
+               th:text="${i+1}">1</a>
+          </li>
+          <li class="page-item" th:classappend="${pagina == totalPaginas-1 ? ' disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/estudante/vantagens(pagina=${pagina+1}, empresaId=${empresaId}, valorMaximo=${valorMaximo}, pesquisa=${pesquisa})}"
+               aria-label="Próximo">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Resgate -->
+  <div class="modal fade" id="confirmarResgateModal" tabindex="-1"
+       aria-labelledby="confirmarResgateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmarResgateModalLabel">Confirmar Resgate</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Você está prestes a resgatar <strong id="vantagemNome"></strong> por <strong id="vantagemValor"></strong>.</p>
+          <p>Saldo atual: <strong th:text="${estudante.saldo + ' ME'}">0 ME</strong>.</p>
+          <p>Deseja confirmar?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <form th:action="@{/estudante/vantagens/resgatar}" method="post">
+            <input type="hidden" id="vantagemId" name="vantagemId" value="">
+            <button type="submit" class="btn btn-primary">Confirmar Resgate</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <footer class="bg-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <p class="mb-0">&copy; 2023 Moeda Estudantil - Todos os direitos reservados</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="#" class="text-decoration-none text-secondary me-3">Termos de Uso</a>
+          <a href="#" class="text-decoration-none text-secondary">Política de Privacidade</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var modal = document.getElementById('confirmarResgateModal');
+      modal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-vantagem-id');
+        var nome = button.getAttribute('data-vantagem-nome');
+        var valor = button.getAttribute('data-vantagem-valor');
+        document.getElementById('vantagemNome').textContent = nome;
+        document.getElementById('vantagemValor').textContent = valor + ' ME';
+        document.getElementById('vantagemId').value = id;
+      });
+    });
+  </script>
+</body>
+</html>

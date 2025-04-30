@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head}"></head>
+<body>
+    <div th:replace="~{layout/base :: header}"></div>
+    
+    <main>
+        <!-- Banner Principal -->
+        <div class="bg-primary text-white py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold">Moeda Estudantil</h1>
+                        <p class="lead">Um sistema de reconhecimento de mérito estudantil através de uma moeda virtual.</p>
+                        <div class="mt-4">
+                            <a th:href="@{/cadastro/estudante}" class="btn btn-light btn-lg me-2">Sou Estudante</a>
+                            <a th:href="@{/cadastro/empresa}" class="btn btn-outline-light btn-lg">Sou Empresa</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 d-none d-lg-block">
+                        <img th:src="@{/images/coins.svg}" alt="Moedas Estudantis" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Como Funciona -->
+        <div class="container py-5">
+            <h2 class="text-center mb-5">Como Funciona</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-user-graduate fa-2x"></i>
+                            </div>
+                            <h4>Para Estudantes</h4>
+                            <p>Receba moedas por bom desempenho, participação e comportamento exemplar. Troque por vantagens e descontos em empresas parceiras.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                            </div>
+                            <h4>Para Professores</h4>
+                            <p>Distribua moedas para seus alunos como reconhecimento por bom comportamento, participação em aula e iniciativas diferenciadas.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-store fa-2x"></i>
+                            </div>
+                            <h4>Para Empresas</h4>
+                            <p>Ofereça vantagens e descontos para estudantes, aumente sua visibilidade e contribua para um ecossistema educacional mais engajado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vantagens do Sistema -->
+        <div class="bg-light py-5">
+            <div class="container">
+                <h2 class="text-center mb-5">Vantagens do Sistema</h2>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-medal text-primary fa-2x me-3"></i>
+                            </div>
+                            <div>
+                                <h4>Reconhecimento do Mérito</h4>
+                                <p>Valorize e reconheça o bom desempenho e comportamento dos estudantes de forma tangível.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-hand-holding-usd text-primary fa-2x me-3"></i>
+                            </div>
+                            <div>
+                                <h4>Benefícios Reais</h4>
+                                <p>Estudantes podem trocar suas moedas por descontos, produtos e serviços de empresas parceiras.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-chart-line text-primary fa-2x me-3"></i>
+                            </div>
+                            <div>
+                                <h4>Aumento do Engajamento</h4>
+                                <p>Incentive a participação ativa e o comprometimento dos estudantes com seu processo de aprendizagem.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-handshake text-primary fa-2x me-3"></i>
+                            </div>
+                            <div>
+                                <h4>Parcerias Estratégicas</h4>
+                                <p>Crie conexões entre instituições de ensino e empresas, gerando oportunidades para ambos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="container py-5 text-center">
+            <h2>Comece Agora</h2>
+            <p class="lead mb-4">Faça parte deste sistema de incentivo ao mérito estudantil.</p>
+            <div>
+                <a th:href="@{/login}" class="btn btn-primary btn-lg me-2">Entrar</a>
+                <a th:href="@{/cadastro/estudante}" class="btn btn-outline-primary btn-lg">Cadastrar</a>
+            </div>
+        </div>
+    </main>
+    
+    <div th:replace="~{layout/base :: footer}"></div>
+    <div th:replace="~{layout/base :: scripts}"></div>
+</body>
+</html> 
