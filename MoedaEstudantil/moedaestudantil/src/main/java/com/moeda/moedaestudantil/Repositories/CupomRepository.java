@@ -30,6 +30,10 @@ public interface CupomRepository extends JpaRepository<Cupom, Long> {
     
     Page<Cupom> findByEstudanteIdAndEmpresaIdAndStatus(Long estudanteId, Long empresaId, CupomStatus status, Pageable pageable);
     
+    Page<Cupom> findByEmpresaId(Long empresaId, Pageable pageable);
+    
+    Page<Cupom> findByEmpresaIdAndStatus(Long empresaId, CupomStatus status, Pageable pageable);
+    
     int countByEstudanteIdAndStatus(Long estudanteId, CupomStatus status);
     
     List<Cupom> findByDataValidadeBefore(LocalDateTime data);

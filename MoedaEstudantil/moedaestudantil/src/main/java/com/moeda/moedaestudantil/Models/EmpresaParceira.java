@@ -76,5 +76,12 @@ public class EmpresaParceira extends Usuario {
     public void notificarResgate(Cupom cupom) {
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 
 }

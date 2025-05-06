@@ -6,6 +6,7 @@ import com.moeda.moedaestudantil.Repositories.EmpresaParceiraRepository;
 import com.moeda.moedaestudantil.Repositories.VantagemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,11 @@ public class EmpresaParceiraService {
     
     public List<EmpresaParceira> listarTodas() {
         return empresaRepository.findAll();
+    }
+    
+    @Transactional
+    public EmpresaParceira salvar(EmpresaParceira empresa) {
+        return empresaRepository.save(empresa);
     }
     
     public List<EmpresaParceira> listarEmpresasComVantagens() {

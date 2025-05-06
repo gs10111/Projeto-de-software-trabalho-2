@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste da API Moeda Estudantil</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2a73cc;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #2a73cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1b5ba3;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+        input, select {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teste da API Moeda Estudantil</h1>
+        
+        <div class="card">
+            <h2>Login</h2>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="estudante@teste.com">
+            </div>
+            <div>
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" value="123456">
+            </div>
+            <div>
+                <label for="tipo-usuario">Tipo de Usuário:</label>
+                <select id="tipo-usuario">
+                    <option value="estudante" selected>Estudante</option>
+                    <option value="professor">Professor</option>
+                    <option value="empresa">Empresa</option>
+                </select>
+            </div>
+            <button id="btn-login">Login</button>
+            <div id="token-display"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Testar Endpoint</h2>
+            <div>
+                <label for="endpoint">Endpoint:</label>
+                <input type="text" id="endpoint" value="/api/estudantes/1/saldo">
+            </div>
+            <div>
+                <label for="method">Método:</label>
+                <select id="method">
+                    <option value="GET" selected>GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div>
+                <label for="request-body">Corpo da Requisição (JSON):</label>
+                <textarea id="request-body" rows="5" style="width:100%"></textarea>
+            </div>
+            <button id="btn-request">Enviar Requisição</button>
+            <h3>Resposta:</h3>
+            <pre id="response"></pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        let token = null;
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            let emailLogin = '';
+            const senha = document.getElementById('senha').value;
+            const tipoUsuario = document.getElementById('tipo-usuario').value;
+
+            // Determinar o email com base no tipo de usuário selecionado
+            if (tipoUsuario === 'professor') {
+                emailLogin = 'professor@teste.com';
+            } else if (tipoUsuario === 'empresa') {
+                emailLogin = 'empresa@teste.com';
+            } else {
+                emailLogin = 'estudante@teste.com';
+            }
+
+            // Atualizar o campo visível (opcional, apenas para UI)
+            document.getElementById('email').value = emailLogin;
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailLogin,
+                        senha: senha
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha na autenticação');
+                }
+
+                const data = await response.json();
+                token = data.token;
+                
+                document.getElementById('token-display').innerHTML = 
+                    `<p style="color: green;">Login bem sucedido!</p>
+                     <p>Token: ${token.substring(0, 20)}...</p>`;
+            } catch (error) {
+                document.getElementById('token-display').innerHTML = 
+                    `<p style="color: red;">Erro: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('btn-request').addEventListener('click', async () => {
+            const endpoint = document.getElementById('endpoint').value;
+            const method = document.getElementById('method').value;
+            const requestBody = document.getElementById('request-body').value;
+            
+            try {
+                const options = {
+                    method: method,
+                    headers: {}
+                };
+                
+                if (token) {
+                    options.headers['Authorization'] = `Bearer ${token}`;
+                }
+                
+                if (['POST', 'PUT'].includes(method) && requestBody.trim()) {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = requestBody;
+                }
+                
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const responseText = await response.text();
+                
+                let formattedResponse;
+                try {
+                    // Tentar formatar como JSON
+                    formattedResponse = JSON.stringify(JSON.parse(responseText), null, 2);
+                } catch (e) {
+                    // Se não for JSON, mostrar como texto
+                    formattedResponse = responseText;
+                }
+                
+                document.getElementById('response').textContent = formattedResponse;
+            } catch (error) {
+                document.getElementById('response').textContent = `Erro: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html> 

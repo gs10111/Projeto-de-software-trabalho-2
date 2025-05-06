@@ -13,6 +13,8 @@ public interface VantagemRepository extends JpaRepository<Vantagem, Long> {
     
     List<Vantagem> findByEmpresaId(Long empresaId);
     
+    Page<Vantagem> findByEmpresaId(Long empresaId, Pageable pageable);
+    
     Page<Vantagem> findByDisponivelTrue(Pageable pageable);
     
     Page<Vantagem> findByEmpresaIdAndDisponivelTrue(Long empresaId, Pageable pageable);

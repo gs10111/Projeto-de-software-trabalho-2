@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,7 +38,41 @@ public class VantagemService {
     public List<Vantagem> listarVantagensPorEmpresa(Long empresaId) {
         return vantagemRepository.findByEmpresaId(empresaId);
     }
-
+    
+    /**
+     * Buscar vantagens de uma empresa com paginação
+     */
+    public Page<Vantagem> buscarPorEmpresa(Long empresaId, Pageable pageable) {
+        return vantagemRepository.findByEmpresaId(empresaId, pageable);
+    }
+    
+    /**
+     * Salvar uma vantagem
+     */
+    @Transactional
+    public Vantagem salvar(Vantagem vantagem) {
+        return vantagemRepository.save(vantagem);
+    }
+    
+    /**
+     * Remover uma vantagem
+     */
+    @Transactional
+    public void remover(Long id) {
+        Vantagem vantagem = buscarPorId(id);
+        vantagemRepository.delete(vantagem);
+    }
+    
+    /**
+     * Atualizar a disponibilidade de uma vantagem
+     */
+    @Transactional
+    public Vantagem atualizarDisponibilidade(Long id, boolean disponivel) {
+        Vantagem vantagem = buscarPorId(id);
+        vantagem.setDisponivel(disponivel);
+        return vantagemRepository.save(vantagem);
+    }
+    
     public Vantagem criarVantagem(Vantagem vantagem, Long empresaId) {
         EmpresaParceira empresa = empresaParceiraRepository.findById(empresaId)
                 .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada"));

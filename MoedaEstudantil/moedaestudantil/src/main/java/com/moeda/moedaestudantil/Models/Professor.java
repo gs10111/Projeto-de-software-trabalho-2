@@ -2,6 +2,7 @@ package com.moeda.moedaestudantil.Models;
 
 import com.moeda.moedaestudantil.Enumerators.PerfilUsuario;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,9 @@ public class Professor extends Usuario {
     @Column(nullable = false)
     private String departamento;
 
+    @Column(name = "data_cadastro", nullable = false)
+    private LocalDateTime dataCadastro;
+
     @ManyToOne
     @JoinColumn(name = "instituicao_id", nullable = false)
     private Instituicao instituicao;
@@ -27,6 +31,7 @@ public class Professor extends Usuario {
     public Professor() {
         super();
         this.setPerfil(PerfilUsuario.PROFESSOR);
+        this.dataCadastro = LocalDateTime.now();
     }
 
     public Professor(String nome, String email, String senhaHash, String cpf, String departamento, Instituicao instituicao) {
@@ -34,6 +39,7 @@ public class Professor extends Usuario {
         this.cpf = cpf;
         this.departamento = departamento;
         this.instituicao = instituicao;
+        this.dataCadastro = LocalDateTime.now();
     }
 
     public String getCpf() {
@@ -62,6 +68,14 @@ public class Professor extends Usuario {
 
     public List<Transacao> getTransacoes() {
         return transacoes;
+    }
+
+    public LocalDateTime getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(LocalDateTime dataCadastro) {
+        this.dataCadastro = dataCadastro;
     }
 
     public void enviarMoedas(Estudante estudante, int quantidade, String motivo) {

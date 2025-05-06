@@ -1,93 +1,133 @@
 package com.moeda.moedaestudantil.Controllers;
 
+import com.moeda.moedaestudantil.DTO.MensagemResponseDTO;
+import com.moeda.moedaestudantil.DTO.TransacaoDTO;
 import com.moeda.moedaestudantil.Models.Professor;
 import com.moeda.moedaestudantil.Models.Transacao;
-import com.moeda.moedaestudantil.Repositories.EstudanteRepository;
-import com.moeda.moedaestudantil.Repositories.ProfessorRepository;
+import com.moeda.moedaestudantil.Services.ProfessorService;
 import com.moeda.moedaestudantil.Services.TransacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@Controller
-@RequestMapping("/professor")
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/professores")
 public class ProfessorController {
 
     @Autowired
-    private ProfessorRepository professorRepository;
-
-    @Autowired
-    private EstudanteRepository estudanteRepository;
+    private ProfessorService professorService;
 
     @Autowired
     private TransacaoService transacaoService;
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        Professor professor = getProfessorLogado();
-        
-        model.addAttribute("professor", professor);
-        model.addAttribute("saldo", transacaoService.calcularSaldoProfessor(professor));
-        model.addAttribute("transacoes", transacaoService.listarTransacoesPorProfessor(professor.getId()));
-        
-        return "professor/dashboard";
+    /**
+     * Buscar um professor pelo ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Professor> buscarProfessor(@PathVariable Long id) {
+        Professor professor = professorService.buscarPorId(id);
+        return ResponseEntity.ok(professor);
     }
 
-    @GetMapping("/enviar-moedas")
-    public String formEnviarMoedas(Model model) {
-        Professor professor = getProfessorLogado();
-        
-        model.addAttribute("saldo", transacaoService.calcularSaldoProfessor(professor));
-        model.addAttribute("estudantes", estudanteRepository.findByInstituicaoId(professor.getInstituicao().getId()));
-        
-        return "professor/enviar-moedas";
+    /**
+     * Listar todos os professores
+     */
+    @GetMapping
+    public ResponseEntity<List<Professor>> listarProfessores() {
+        List<Professor> professores = professorService.listarTodos();
+        return ResponseEntity.ok(professores);
     }
 
-    @PostMapping("/enviar-moedas")
-    public String enviarMoedas(
+    /**
+     * Consultar saldo atual do professor
+     */
+    @GetMapping("/{id}/saldo")
+    public ResponseEntity<Integer> consultarSaldo(@PathVariable Long id) {
+        int saldo = professorService.calcularSaldoProfessor(id);
+        return ResponseEntity.ok(saldo);
+    }
+
+    /**
+     * Consultar extrato de transações do professor
+     */
+    @GetMapping("/{id}/extrato")
+    public ResponseEntity<List<TransacaoDTO>> consultarExtrato(@PathVariable Long id) {
+        List<Transacao> transacoes = transacaoService.listarTransacoesPorProfessor(id);
+        
+        List<TransacaoDTO> transacoesDTO = transacoes.stream()
+            .map(transacao -> new TransacaoDTO(
+                transacao.getId(),
+                transacao.getDataHora(),
+                transacao.getValor(),
+                transacao.getDescricao(),
+                transacao.getTipo(),
+                transacao.getEmissor() != null ? transacao.getEmissor().getNome() : null,
+                transacao.getEstudante() != null ? transacao.getEstudante().getNome() : null
+            ))
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(transacoesDTO);
+    }
+
+    /**
+     * Enviar moedas para um estudante
+     */
+    @PostMapping("/{professorId}/enviar-moedas")
+    public ResponseEntity<?> enviarMoedas(
+            @PathVariable Long professorId,
             @RequestParam Long estudanteId,
             @RequestParam int quantidade,
-            @RequestParam String motivo,
-            RedirectAttributes redirectAttributes) {
+            @RequestParam String motivo) {
         
         try {
-            Professor professor = getProfessorLogado();
+            // Validar saldo do professor
+            if (!professorService.validarSaldo(professorId, quantidade)) {
+                return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new MensagemResponseDTO("Saldo insuficiente para realizar a transferência"));
+            }
             
+            // Criar a transação
             Transacao transacao = transacaoService.criarTransacao(
-                    professor.getId(),
+                    professorId,
                     estudanteId,
                     quantidade,
-                    "Envio de moedas para reconhecimento",
-                    motivo
-            );
+                    "Transferência de moedas",
+                    motivo);
             
-            redirectAttributes.addFlashAttribute("mensagem", "Moedas enviadas com sucesso!");
-            return "redirect:/professor/dashboard";
+            return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new TransacaoDTO(
+                    transacao.getId(),
+                    transacao.getDataHora(),
+                    transacao.getValor(),
+                    transacao.getDescricao(),
+                    transacao.getTipo(),
+                    transacao.getEmissor() != null ? transacao.getEmissor().getNome() : null,
+                    transacao.getEstudante() != null ? transacao.getEstudante().getNome() : null
+                ));
             
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("erro", e.getMessage());
-            return "redirect:/professor/enviar-moedas";
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new MensagemResponseDTO(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MensagemResponseDTO("Erro ao enviar moedas: " + e.getMessage()));
         }
     }
 
-    @GetMapping("/extrato")
-    public String extrato(Model model) {
-        Professor professor = getProfessorLogado();
-        
-        model.addAttribute("transacoes", transacaoService.listarTransacoesPorProfessor(professor.getId()));
-        
-        return "professor/extrato";
-    }
-
-    private Professor getProfessorLogado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        
-        return professorRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Professor não encontrado"));
+    /**
+     * Simular criação de novo semestre (para fins de teste)
+     */
+    @PostMapping("/novo-semestre")
+    public ResponseEntity<MensagemResponseDTO> criarNovoSemestre() {
+        professorService.iniciarNovoSemestre();
+        return ResponseEntity.ok(new MensagemResponseDTO("Novo semestre iniciado com sucesso"));
     }
 } 

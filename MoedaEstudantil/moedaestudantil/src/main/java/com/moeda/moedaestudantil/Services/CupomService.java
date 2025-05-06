@@ -90,6 +90,14 @@ public class CupomService {
         return cupomSalvo;
     }
     
+    /**
+     * Método para compatibilidade com o controller, recebendo objetos Estudante e Vantagem diretamente
+     */
+    @Transactional
+    public Cupom gerarCupom(Estudante estudante, Vantagem vantagem) {
+        return gerarCupom(estudante.getId(), vantagem.getId());
+    }
+    
     public Page<Cupom> buscarPorEstudante(Long estudanteId, Pageable pageable) {
         return cupomRepository.findByEstudanteId(estudanteId, pageable);
     }
@@ -152,20 +160,43 @@ public class CupomService {
         return cupomSalvo;
     }
     
-    public Page<Cupom> listarCuponsPorEstudante(Long estudanteId, Pageable pageable) {
+    /**
+     * Métodos para compatibilidade com o CupomController
+     */
+    public Page<Cupom> buscarCuponsPorEstudante(Long estudanteId, Pageable pageable) {
         return cupomRepository.findByEstudanteId(estudanteId, pageable);
     }
     
-    public Page<Cupom> listarCuponsPorEstudanteEEmpresa(Long estudanteId, Long empresaId, Pageable pageable) {
-        return cupomRepository.findByEstudanteIdAndEmpresaId(estudanteId, empresaId, pageable);
-    }
-    
-    public Page<Cupom> listarCuponsPorEstudanteEStatus(Long estudanteId, CupomStatus status, Pageable pageable) {
+    public Page<Cupom> buscarCuponsPorEstudanteEStatus(Long estudanteId, CupomStatus status, Pageable pageable) {
         return cupomRepository.findByEstudanteIdAndStatus(estudanteId, status, pageable);
     }
     
-    public Page<Cupom> listarCuponsPorEstudanteEmpresaEStatus(Long estudanteId, Long empresaId, CupomStatus status, Pageable pageable) {
-        return cupomRepository.findByEstudanteIdAndEmpresaIdAndStatus(estudanteId, empresaId, status, pageable);
+    public Page<Cupom> buscarCuponsPorEmpresa(Long empresaId, Pageable pageable) {
+        return cupomRepository.findByEmpresaId(empresaId, pageable);
+    }
+    
+    public Page<Cupom> buscarCuponsPorEmpresaEStatus(Long empresaId, CupomStatus status, Pageable pageable) {
+        return cupomRepository.findByEmpresaIdAndStatus(empresaId, status, pageable);
+    }
+    
+    public Cupom buscarPorCodigo(String codigo) {
+        return cupomRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new IllegalArgumentException("Cupom não encontrado com o código: " + codigo));
+    }
+    
+    public Cupom atualizarStatus(Long id, CupomStatus novoStatus) {
+        Cupom cupom = cupomRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cupom não encontrado com o ID: " + id));
+        
+        cupom.setStatus(novoStatus);
+        
+        if (novoStatus == CupomStatus.USADO) {
+            cupom.setDataUso(LocalDateTime.now());
+            // Enviar email de uso do cupom
+            emailService.enviarEmailUsoCupom(cupom);
+        }
+        
+        return cupomRepository.save(cupom);
     }
     
     public List<Long> listarEmpresasComCuponsPorEstudante(Long estudanteId) {
